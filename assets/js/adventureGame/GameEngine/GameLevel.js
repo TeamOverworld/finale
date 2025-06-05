@@ -10,6 +10,9 @@ class GameLevel {
     this.gameEnv.gameContainer = gameControl.gameContainer
     this.gameEnv.gameCanvas = gameControl.gameCanvas
     this.gameEnv.gameControl = gameControl
+
+    // Store bound resize listener for proper removal later
+    this.boundResize = this.resize.bind(this)
   }
 
   create(GameLevelClass) {
@@ -33,7 +36,7 @@ class GameLevel {
         this.gameLevel.initialize()
     }
 
-    window.addEventListener("resize", this.resize.bind(this))
+    window.addEventListener("resize", this.boundResize)
   }
 
   destroy() {
@@ -44,20 +47,24 @@ class GameLevel {
     // Properly clean up all game objects
     for (let index = this.gameEnv.gameObjects.length - 1; index >= 0; index--) {
       // Make sure each object's destroy method is called to clean up event listeners
-      this.gameEnv.gameObjects[index].destroy()
+      if (typeof this.gameEnv.gameObjects[index].destroy === "function") {
+        this.gameEnv.gameObjects[index].destroy()
+      }
     }
 
     // Clear out the game objects array
     this.gameEnv.gameObjects = [];
     
-    window.removeEventListener("resize", this.resize.bind(this))
+    window.removeEventListener("resize", this.boundResize)
   }
 
   update() {
     this.gameEnv.clear()
 
     for (let gameObject of this.gameEnv.gameObjects) {
-      gameObject.update()
+      if (typeof gameObject.update === "function") {
+        gameObject.update()
+      }
     }
 
     if (typeof this.gameLevel.update === "function") {
@@ -68,7 +75,9 @@ class GameLevel {
   resize() {
     this.gameEnv.resize()
     for (let gameObject of this.gameEnv.gameObjects) {
-      gameObject.resize()
+      if (typeof gameObject.resize === "function") {
+        gameObject.resize()
+      }
     }
   }
 }
