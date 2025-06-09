@@ -165,6 +165,10 @@ class GameLevelOverworld {
         this.backgroundImage = new Image();
         this.backgroundImage.src = `${gameEnv.path}/images/gamify/mcbg.jpg`; // Replace with your image path
 
+        // Load collectible item image
+        this.collectibleImage = new Image();
+        this.collectibleImage.src = `${gameEnv.path}/images/platformer/sprites/sword.png`; // Replace with your image path
+
         this.playerX = 50;
         this.playerY = 600; // Move player down to align with the new ground position
         this.playerSpeedX = 0;
@@ -640,12 +644,23 @@ class GameLevelOverworld {
         this.ctx.fillStyle = 'green'; // NPC color
         this.ctx.fillRect(this.npcX, this.npcY, this.npcWidth, this.npcHeight);
 
-        // Draw collectible item if not collected (moved along with the platform)
+        // Draw collectible item if not collected
         if (!this.itemCollected) {
-          this.ctx.fillStyle = 'gold';
-          this.ctx.beginPath();
-          this.ctx.arc(this.canvas.width / 2 - 120, this.groundY - 90, 20, 0, Math.PI * 2); // Gold circle
-          this.ctx.fill();
+          if (this.collectibleImage.complete) {
+            this.ctx.drawImage(
+              this.collectibleImage,
+              this.canvas.width / 2 - 120, // X position
+              this.groundY - 110, // Y position (adjusted slightly for better alignment)
+              40, // Width
+              40  // Height
+            );
+          } else {
+            // Fallback if the image hasn't loaded yet
+            this.ctx.fillStyle = 'gold';
+            this.ctx.beginPath();
+            this.ctx.arc(this.canvas.width / 2 - 120, this.groundY - 90, 20, 0, Math.PI * 2); // Gold circle
+            this.ctx.fill();
+          }
         }
       }
     }
