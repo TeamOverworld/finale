@@ -675,20 +675,41 @@ class GameLevelOverworld {
         // Draw player using the image and flip based on direction
         if (this.playerImage.complete) {
           if (this.playerDirection === 1) {
-            // Flip horizontally when facing right
-            this.ctx.translate(this.playerX + this.playerWidth, 0); // Translate to the player's position + width
-            this.ctx.scale(-1, 1); // Flip horizontally
+            this.ctx.save();
+            this.ctx.translate(this.playerX + this.playerWidth, 0);
+            this.ctx.scale(-1, 1);
+
+            // Draw player
             this.ctx.drawImage(
               this.playerImage,
-              0, // X position after translation
-              this.playerY, // Y position
-              this.playerWidth, // Width
-              this.playerHeight // Height
+              0,
+              this.playerY,
+              this.playerWidth,
+              this.playerHeight
             );
-            // Reset transform after drawing
-            this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+            // Draw the item in the hand if collected
+            if (this.itemCollected && this.collectibleImage.complete) {
+              const swordOffsetY = 10;
+              let swordOffsetX = 10; // Default for left-facing
+              
+              if (this.playerDirection === 1) {
+                // Facing right, move the sword further away by increasing the offset
+                swordOffsetX = 50; // Adjust this value as desired to make it further
+              }
+
+              this.ctx.drawImage(
+                this.collectibleImage,
+                swordOffsetX,
+                this.playerY + swordOffsetY,
+                30,
+                30
+              );
+            }
+
+            this.ctx.restore();
           } else {
-            // Draw normally when facing left
+            // Draw player facing left
             this.ctx.drawImage(
               this.playerImage,
               this.playerX,
@@ -696,8 +717,20 @@ class GameLevelOverworld {
               this.playerWidth,
               this.playerHeight
             );
+
+            // Draw the item in the hand if collected
+            if (this.itemCollected && this.collectibleImage.complete) {
+              const swordOffsetX = -5; // Adjust to be near the player's hand
+              const swordOffsetY = 10;
+              this.ctx.drawImage(
+                this.collectibleImage,
+                this.playerX + this.playerWidth + swordOffsetX - 30, // Align to left hand
+                this.playerY + swordOffsetY,
+                30,
+                30
+              );
+            }
           }
-          this.ctx.restore(); // Restore the canvas state
         } else {
           // Fallback if the image hasn't loaded yet
           this.ctx.fillStyle = 'red';
