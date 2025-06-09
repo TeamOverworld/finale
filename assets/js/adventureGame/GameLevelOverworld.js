@@ -405,7 +405,7 @@ class GameLevelOverworld {
 
         // Clean up event listeners and canvas
         window.removeEventListener('keydown', this.keyDownHandler);
-        window.removeEventListener('keyup', this.keyUpHandler);
+        window.removeEventListener('keyup', this.keyDownHandler);
 
         if (this.canvas?.parentNode) {
           this.canvas.parentNode.removeChild(this.canvas);
@@ -569,9 +569,57 @@ class GameLevelOverworld {
             this.stop(); // Player dies if the item is not collected
             console.log('Player died!');
           } else {
-            this.enemyX = -100; // Move enemy off-screen to simulate death
-            this.enemyDefeated = true; // Mark the enemy as defeated
-            console.log('Enemy defeated!');
+            // Play animation for zombie collision
+            if (this.itemCollected) {
+              // Stop the zombie's movement
+              this.enemySpeedX = 0; // Set horizontal speed to 0
+              this.enemyDirection = 0; // Prevent direction changes
+
+              // Clear the zombie's previous frame from the canvas
+              this.ctx.clearRect(this.enemyX, this.enemyY, this.enemyWidth, this.enemyHeight);
+
+              // If there's an existing enemy element, remove it
+              if (this.currentEnemyElement) {
+                this.currentEnemyElement.remove();
+              }
+
+              // Create a new enemy element
+              const enemyElement = document.createElement('img');
+              enemyElement.src = this.enemyImage.src; // Use the zombie PNG source
+              Object.assign(enemyElement.style, {
+                position: 'absolute',
+                left: `${this.enemyX}px`,
+                top: `${this.enemyY}px`,
+                width: `${this.enemyWidth}px`,
+                height: `${this.enemyHeight}px`,
+                transform: 'rotate(0deg)', // Initial rotation
+                opacity: '1',
+                transition: 'transform 1s ease-out, opacity 1s ease-out',
+                zIndex: '10000' // Ensure it appears above other elements
+              });
+
+              // Add the new element to the document
+              document.body.appendChild(enemyElement);
+
+              // Save a reference to this element for future removal
+              this.currentEnemyElement = enemyElement;
+
+              // Start the fall-over animation
+              setTimeout(() => {
+                enemyElement.style.transform = 'rotate(90deg)'; // Rotate 90 degrees
+                enemyElement.style.opacity = '0'; // Fade out
+              }, 0); // Start immediately
+
+              // Remove the element and reset enemy properties after the animation completes
+              setTimeout(() => {
+                enemyElement.remove(); // Remove element
+                this.currentEnemyElement = null; // Clear the reference
+                this.enemyX = -100; // Move enemy off-screen
+                this.enemyY = -100; // Move enemy off-screen vertically
+                this.enemyDefeated = true; // Mark the enemy as defeated
+                console.log('Enemy defeated!');
+              }, 1000); // Wait for animation to complete
+            }
           }
         }
 
@@ -875,7 +923,7 @@ class GameLevelOverworld {
 
     // Clean up event listeners and canvas
     window.removeEventListener('keydown', this.keyDownHandler);
-    window.removeEventListener('keyup', this.keyUpHandler);
+    window.removeEventListener('keyup', this.keyDownHandler);
 
     if (this.canvas?.parentNode) {
       this.canvas.parentNode.removeChild(this.canvas);
