@@ -196,7 +196,8 @@ class GameLevelOverworld {
         // Enemy properties
         const platformStartX = this.canvas.width / 2 + 50; // Start of the large platform
         const platformEndX = this.canvas.width / 2 + 410; // End of the large platform
-        this.enemyX = platformStartX; // Start enemy at the beginning of the platform
+        const platformMiddleX = (platformStartX + platformEndX) / 2; // Calculate the middle of the platform
+        this.enemyX = platformMiddleX - 50; // Center the enemy on the platform (adjusted for width)
         this.enemyY = this.groundY - 400 - 100; // Align enemy with the top of the large platform
         this.enemyWidth = 100; // Width of the enemy
         this.enemyHeight = 100; // Height of the enemy
@@ -496,7 +497,7 @@ class GameLevelOverworld {
         // Collision with elevated ground on the right
         if (
           this.playerY + this.playerHeight > this.groundY - 400 && // Adjust collision to match the visual height of the elevated ground
-          this.playerX > this.canvas.width - 200 && // Elevated ground starts on the right
+          this.playerX + this.playerWidth > this.canvas.width - 200 && // Ensure collision starts at the elevated ground's left edge
           this.playerX < this.canvas.width // Ensure collision ends at the right edge of the canvas
         ) {
           this.playerY = this.groundY - 400 - this.playerHeight; // Adjust for elevated ground height
