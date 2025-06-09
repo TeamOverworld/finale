@@ -357,7 +357,7 @@ class GameLevelOverworld {
 
         // Add button to execute callback
         const button = document.createElement('button');
-        button.textContent = 'Finish Level, Return to Main Page';
+        button.textContent = 'Continue.';
         Object.assign(button.style, {
           padding: '10px 20px',
           fontSize: '16px',
@@ -405,7 +405,7 @@ class GameLevelOverworld {
         this.keysPressed[e.code] = true;
 
         // Handle interaction with NPC when 't' is pressed
-        if (e.code === 'KeyT') {
+        if (e.code === 'KeyE') {
           if (
             this.playerX + 50 > this.npcX && // Player's right edge is past NPC's left edge
             this.playerX < this.npcX + this.npcWidth && // Player's left edge is before NPC's right edge
@@ -414,12 +414,12 @@ class GameLevelOverworld {
           ) {
             if (!this.enemyDefeated) { // Enemy is still alive
               this.showDialogue(
-                "BAWK! I'm too scared to move because of that monster over there!",
+                "BAWK! I'm too scared to move because of that monster over there! ( You have to defeat it first! )",
                 "Scared NPC"
               );
             } else { // Enemy is defeated
               this.showDialogue(
-                "Hooray! You have slain the monster! Let's get out of here..",
+                "Hooray! You have slain the monster! Let's get out of here.. ( You will now be transported back to the Desert! )",
                 "Grateful NPC",
                 () => {
                   window.location.reload(); // Reload the page
