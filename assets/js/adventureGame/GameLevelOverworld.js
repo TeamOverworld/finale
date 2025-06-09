@@ -260,6 +260,12 @@ class GameLevelOverworld {
         window.addEventListener('keydown', this.keyDownHandler);
         window.addEventListener('keyup', this.keyUpHandler);
 
+        // Show instructions at the start of the platformer
+        this.showDialogue(
+          "Oh no! It seems that there is a chicken in danger!\n\nPress 'E' to talk\nPress 'C' to collect",
+          "Instructions"
+        );
+
         this.loop();
       }
 
