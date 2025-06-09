@@ -838,7 +838,7 @@ class GameLevelOverworld {
 
         this.dialogueSystem.addButtons([
           {
-            text: "Mountainous Plains",
+            text: "Yes!",
             primary: true,
             action: () => {
               this.dialogueSystem.closeDialogue();
