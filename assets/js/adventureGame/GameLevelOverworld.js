@@ -165,32 +165,47 @@ class GameLevelOverworld {
         this.backgroundImage = new Image();
         this.backgroundImage.src = `${gameEnv.path}/images/gamify/mcbg.jpg`; // Replace with your image path
 
+        
         // Load collectible item image
         this.collectibleImage = new Image();
         this.collectibleImage.src = `${gameEnv.path}/images/platformer/sprites/sword.png`; // Replace with your image path
 
-        this.playerX = 50;
-        this.playerY = 600; // Move player down to align with the new ground position
+        // Load player image
+        this.playerImage = new Image();
+        this.playerImage.src = `${gameEnv.path}/images/gamify/stevelol.png`; // Replace with your player image path
+
+        // Player properties
+        this.playerX = 50; // Initial X position
+        this.playerY = 600; // Initial Y position
+        this.playerWidth = 85; // Width of the player
+        this.playerHeight = 85; // Height of the player
         this.playerSpeedX = 0;
         this.playerSpeedY = 0;
         this.gravity = 0.5;
-        this.groundY = 700; // Move ground further down to create more sky space
+        this.groundY = 700; // Ground level
         this.keysPressed = {};
         this.animationFrameId = null;
         this.onExit = null; // callback when platformer stops
         this.canJump = true; // Flag to track if the player can jump
+        this.playerDirection = 1; // 1 for right, -1 for left
+
+        // Load enemy image
+        this.enemyImage = new Image();
+        this.enemyImage.src = `${gameEnv.path}/images/gamify/mzombie.png`; // Replace with your enemy image path
 
         // Enemy properties
         const platformStartX = this.canvas.width / 2 + 50; // Start of the large platform
         const platformEndX = this.canvas.width / 2 + 410; // End of the large platform
         this.enemyX = platformStartX; // Start enemy at the beginning of the platform
-        this.enemyY = this.groundY - 450; // Align enemy with the large platform
-        this.enemyWidth = 50;
-        this.enemyHeight = 50;
-        this.enemySpeedX = 1; // Reduced horizontal movement speed
-        this.enemyDirection = 1; // 1 for right, -1 for left
+        this.enemyY = this.groundY - 400 - 100; // Align enemy with the top of the large platform
+        this.enemyWidth = 100; // Width of the enemy
+        this.enemyHeight = 100; // Height of the enemy
+        this.enemySpeedX = 1; // Horizontal movement speed
+        this.enemyDirection = -1; // Start facing left (-1 for left, 1 for right)
 
-        // NPC properties
+        // Load NPC image
+        this.npcImage = new Image();
+        this.npcImage.src = `${gameEnv.path}/images/gamify/mchicken.png`; // Replace with your NPC image path
         this.npcWidth = 50; // Initialize NPC width
         this.npcHeight = 50; // Initialize NPC height
         this.npcX = this.canvas.width - 150; // Place NPC on the ground on the right-hand side
@@ -450,8 +465,10 @@ class GameLevelOverworld {
         // Horizontal movement
         if (this.keysPressed['ArrowRight'] || this.keysPressed['KeyD']) {
           this.playerSpeedX = 5;
+          this.playerDirection = 1; // Facing right
         } else if (this.keysPressed['ArrowLeft'] || this.keysPressed['KeyA']) {
           this.playerSpeedX = -5;
+          this.playerDirection = -1; // Facing left
         } else {
           this.playerSpeedX = 0;
         }
@@ -470,19 +487,19 @@ class GameLevelOverworld {
         this.playerY += this.playerSpeedY;
 
         // Collision with ground
-        if (this.playerY + 50 > this.groundY && this.playerX < this.canvas.width / 6) { // Ground stops earlier
-          this.playerY = this.groundY - 50; // Ensure the square touches the ground
+        if (this.playerY + this.playerHeight > this.groundY && this.playerX < this.canvas.width / 6) {
+          this.playerY = this.groundY - this.playerHeight; // Ensure the player touches the ground
           this.playerSpeedY = 0;
           this.canJump = true; // Enable jumping when the player lands on the ground
         }
 
         // Collision with elevated ground on the right
         if (
-          this.playerY + 50 > this.groundY - 400 && // Adjust collision to match the visual height of the elevated ground
+          this.playerY + this.playerHeight > this.groundY - 400 && // Adjust collision to match the visual height of the elevated ground
           this.playerX > this.canvas.width - 200 && // Elevated ground starts on the right
           this.playerX < this.canvas.width // Ensure collision ends at the right edge of the canvas
         ) {
-          this.playerY = this.groundY - 400 - 50; // Adjust for elevated ground height
+          this.playerY = this.groundY - 400 - this.playerHeight; // Adjust for elevated ground height
           this.playerSpeedY = 0;
           this.canJump = true; // Enable jumping when the player lands on the elevated ground
         }
@@ -491,7 +508,6 @@ class GameLevelOverworld {
         const platforms = [
           { x: this.canvas.width / 4 - 50, y: this.groundY - 150, width: 60, height: 60 },
           { x: this.canvas.width / 4 + 50, y: this.groundY - 200, width: 60, height: 60 },
-          { x: this.canvas.width / 4 + 150, y: this.groundY - 250, width: 60, height: 60 },
           { x: this.canvas.width / 2 - 100, y: this.groundY - 300, width: 60, height: 60 },
           { x: this.canvas.width / 2 - 40, y: this.groundY - 300, width: 60, height: 60 },
           { x: this.canvas.width / 2 + 50, y: this.groundY - 400, width: 60, height: 60 },
@@ -510,13 +526,13 @@ class GameLevelOverworld {
         for (const platform of platforms) {
           // Check if the player is colliding with the platform from above
           if (
-            this.playerX + 50 > platform.x && // Player's right edge is past platform's left edge
+            this.playerX + this.playerWidth > platform.x && // Player's right edge is past platform's left edge
             this.playerX < platform.x + platform.width && // Player's left edge is before platform's right edge
-            this.playerY + 50 > platform.y && // Player's bottom edge is past platform's top edge
+            this.playerY + this.playerHeight > platform.y && // Player's bottom edge is past platform's top edge
             this.playerY < platform.y + platform.height && // Player's top edge is before platform's bottom edge
             this.playerSpeedY > 0 // Ensure the player is falling
           ) {
-            this.playerY = platform.y - 50; // Place player on top of the platform
+            this.playerY = platform.y - this.playerHeight; // Place player on top of the platform
             this.playerSpeedY = 0; // Stop vertical movement
             this.canJump = true; // Enable jumping when the player lands on a platform
           }
@@ -525,9 +541,9 @@ class GameLevelOverworld {
         // Check if the player is near the item and presses 'c' to collect it
         if (
           !this.itemCollected && // Ensure the item hasn't been collected yet
-          this.playerX + 50 > this.canvas.width / 2 - 120 && // Player's right edge is past item's left edge
-          this.playerX < this.canvas.width / 2 - 100 && // Player's left edge is before item's right edge
-          this.playerY + 50 > this.groundY - 90 && // Player's bottom edge is past item's top edge
+          this.playerX + this.playerWidth > this.canvas.width / 2 - 120 && // Player's right edge is past item's left edge
+          this.playerX < this.canvas.width / 2 - 80 && // Player's left edge is before item's right edge
+          this.playerY + this.playerHeight > this.groundY - 110 && // Player's bottom edge is past item's top edge
           this.playerY < this.groundY - 70 && // Player's top edge is before item's bottom edge
           this.keysPressed['KeyC'] // Check if 'c' key is pressed
         ) {
@@ -572,13 +588,13 @@ class GameLevelOverworld {
           this.enemyDirection *= -1; // Switch direction
         }
 
-        // Randomly switch direction
-        if (Math.random() < 0.01) { // 1% chance per frame
+        // Randomly switch direction (reduce probability)
+        if (Math.random() < 0.005) { // 0.5% chance per frame (less frequent)
           this.enemyDirection *= -1;
         }
 
         // Prevent enemy from falling off the platform
-        this.enemyY = this.groundY - 450; // Keep enemy aligned with the platform
+        this.enemyY = this.groundY - 400 - 100; // Keep enemy aligned with the platform
       }
 
       draw() {
@@ -601,16 +617,43 @@ class GameLevelOverworld {
         this.ctx.fillStyle = '#654321';
         this.ctx.fillRect(this.canvas.width - 200, this.groundY - 400, 200, this.canvas.height - (this.groundY - 400));
 
-        // Draw player as red rectangle
-        this.ctx.fillStyle = 'red';
-        this.ctx.fillRect(this.playerX, this.playerY, 50, 50); // Adjusted to ensure proper positioning
+        // Draw player using the image and flip based on direction
+        if (this.playerImage.complete) {
+          if (this.playerDirection === 1) {
+            // Flip horizontally when facing right
+            this.ctx.translate(this.playerX + this.playerWidth, 0); // Translate to the player's position + width
+            this.ctx.scale(-1, 1); // Flip horizontally
+            this.ctx.drawImage(
+              this.playerImage,
+              0, // X position after translation
+              this.playerY, // Y position
+              this.playerWidth, // Width
+              this.playerHeight // Height
+            );
+            // Reset transform after drawing
+            this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+          } else {
+            // Draw normally when facing left
+            this.ctx.drawImage(
+              this.playerImage,
+              this.playerX,
+              this.playerY,
+              this.playerWidth,
+              this.playerHeight
+            );
+          }
+          this.ctx.restore(); // Restore the canvas state
+        } else {
+          // Fallback if the image hasn't loaded yet
+          this.ctx.fillStyle = 'red';
+          this.ctx.fillRect(this.playerX, this.playerY, this.playerWidth, this.playerHeight);
+        }
 
         // Draw platforms (organized to build up to a large platform)
         const platforms = [
           // Staircase-like platforms leading up to the large platform
           { x: this.canvas.width / 4 - 50, y: this.groundY - 150, width: 60, height: 60, image: this.platformImages[0] },
           { x: this.canvas.width / 4 + 50, y: this.groundY - 200, width: 60, height: 60, image: this.platformImages[1] },
-          { x: this.canvas.width / 4 + 150, y: this.groundY - 250, width: 60, height: 60, image: this.platformImages[2] },
 
           // Platform right before the big one (two platforms long, moved further to the right)
           { x: this.canvas.width / 2 - 100, y: this.groundY - 300, width: 60, height: 60, image: this.platformImages[0] },
@@ -636,13 +679,50 @@ class GameLevelOverworld {
           }
         }
 
-        // Draw enemy as a square
-        this.ctx.fillStyle = 'blue'; // Enemy color
-        this.ctx.fillRect(this.enemyX, this.enemyY, this.enemyWidth, this.enemyHeight);
+        // Draw enemy using the image and flip based on direction
+        if (this.enemyImage.complete) {
+          this.ctx.save(); // Save the current canvas state
+          if (this.enemyDirection === 1) {
+            // Flip horizontally when moving right
+            this.ctx.scale(-1, 1);
+            this.ctx.drawImage(
+              this.enemyImage,
+              -this.enemyX - this.enemyWidth, // Flip X position
+              this.enemyY, // Y position
+              this.enemyWidth, // Width
+              this.enemyHeight // Height
+            );
+          } else {
+            // Draw normally when moving left
+            this.ctx.drawImage(
+              this.enemyImage,
+              this.enemyX, // X position
+              this.enemyY, // Y position
+              this.enemyWidth, // Width
+              this.enemyHeight // Height
+            );
+          }
+          this.ctx.restore(); // Restore the canvas state
+        } else {
+          // Fallback if the image hasn't loaded yet
+          this.ctx.fillStyle = 'blue';
+          this.ctx.fillRect(this.enemyX, this.enemyY, this.enemyWidth, this.enemyHeight);
+        }
 
-        // Draw NPC as a square
-        this.ctx.fillStyle = 'green'; // NPC color
-        this.ctx.fillRect(this.npcX, this.npcY, this.npcWidth, this.npcHeight);
+        // Draw NPC using the image
+        if (this.npcImage.complete) {
+          this.ctx.drawImage(
+            this.npcImage,
+            this.npcX, // X position
+            this.npcY, // Y position
+            this.npcWidth, // Width
+            this.npcHeight  // Height
+          );
+        } else {
+          // Fallback if the image hasn't loaded yet
+          this.ctx.fillStyle = 'green';
+          this.ctx.fillRect(this.npcX, this.npcY, this.npcWidth, this.npcHeight);
+        }
 
         // Draw collectible item if not collected
         if (!this.itemCollected) {
